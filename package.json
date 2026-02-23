@@ -13,7 +13,8 @@
 		"@ai-sdk/openai": "^3.0.30",
 		"ai": "^6.0.97",
 		"baileys": "^7.0.0-rc.9",
-		"qrcode-terminal": "^0.12.0"
+		"qrcode-terminal": "^0.12.0",
+		"zod": "^4.3.6"
 	},
 	"devDependencies": {
 		"@types/qrcode-terminal": "^0.12.2"

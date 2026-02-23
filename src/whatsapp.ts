@@ -9,7 +9,7 @@ import makeWASocket, {
 } from "baileys";
 import qrcode from "qrcode-terminal";
 import { addMessage, getMessages, resetSession } from "./session.ts";
-import { chat, getFeedback } from "./teacher.ts";
+import { chat } from "./teacher.ts";
 import { transcribeAudio } from "./transcription.ts";
 
 async function extractUserMessage(msg: WAMessage): Promise<string | null> {
@@ -102,14 +102,13 @@ export async function start(): Promise<void> {
 
 				await withTyping(jid, async () => {
 					addMessage(jid, "user", userText);
-					const [response, feedback] = await Promise.all([
-						chat(getMessages(jid)),
-						getFeedback(userText),
-					]);
+					const { response, feedback } = await chat(getMessages(jid));
 					addMessage(jid, "assistant", response);
 
 					await sock.sendMessage(jid, { text: response });
-					await sock.sendMessage(jid, { text: feedback });
+					if (feedback) {
+						await sock.sendMessage(jid, { text: feedback });
+					}
 				});
 			} catch (err) {
 				console.error("Error processing message:", err);
