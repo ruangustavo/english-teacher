@@ -64,6 +64,15 @@ export async function start(): Promise<void> {
 
 	const sock = makeWASocket({ auth: state });
 
+	async function withTyping<T>(jid: string, fn: () => Promise<T>): Promise<T> {
+		await sock.sendPresenceUpdate("composing", jid);
+		try {
+			return await fn();
+		} finally {
+			await sock.sendPresenceUpdate("paused", jid);
+		}
+	}
+
 	sock.ev.on("connection.update", ({ connection, lastDisconnect, qr }) => {
 		if (qr) onQR(qr);
 		if (connection === "close") onConnectionClose(lastDisconnect);
@@ -91,15 +100,17 @@ export async function start(): Promise<void> {
 					continue;
 				}
 
-				addMessage(jid, "user", userText);
-				const [response, feedback] = await Promise.all([
-					chat(getMessages(jid)),
-					getFeedback(userText),
-				]);
-				addMessage(jid, "assistant", response);
+				await withTyping(jid, async () => {
+					addMessage(jid, "user", userText);
+					const [response, feedback] = await Promise.all([
+						chat(getMessages(jid)),
+						getFeedback(userText),
+					]);
+					addMessage(jid, "assistant", response);
 
-				await sock.sendMessage(jid, { text: response });
-				await sock.sendMessage(jid, { text: feedback });
+					await sock.sendMessage(jid, { text: response });
+					await sock.sendMessage(jid, { text: feedback });
+				});
 			} catch (err) {
 				console.error("Error processing message:", err);
 				await sock.sendMessage(jid, {
