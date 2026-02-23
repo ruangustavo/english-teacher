@@ -1,0 +1,21 @@
+{
+	"name": "english-teacher",
+	"module": "index.ts",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"dev": "node --env-file=.env --watch src/main.ts"
+	},
+	"peerDependencies": {
+		"typescript": "^5"
+	},
+	"dependencies": {
+		"@ai-sdk/openai": "^3.0.30",
+		"ai": "^6.0.97",
+		"baileys": "^7.0.0-rc.9",
+		"qrcode-terminal": "^0.12.0"
+	},
+	"devDependencies": {
+		"@types/qrcode-terminal": "^0.12.2"
+	}
+}
