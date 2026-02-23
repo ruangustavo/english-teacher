@@ -7,6 +7,7 @@ import makeWASocket, {
 	useMultiFileAuthState,
 	type WAMessage,
 } from "baileys";
+import pino from "pino";
 import qrcode from "qrcode-terminal";
 import { addMessage, getMessages, resetSession } from "./session.ts";
 import { chat } from "./teacher.ts";
@@ -59,10 +60,12 @@ function onConnectionClose(
 	}
 }
 
+const logger = pino({ level: "silent" });
+
 export async function start(): Promise<void> {
 	const { state, saveCreds } = await useMultiFileAuthState("auth_info_baileys");
 
-	const sock = makeWASocket({ auth: state });
+	const sock = makeWASocket({ auth: state, logger });
 
 	async function withTyping<T>(jid: string, fn: () => Promise<T>): Promise<T> {
 		await sock.sendPresenceUpdate("composing", jid);

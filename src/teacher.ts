@@ -2,20 +2,33 @@ import { openai } from "@ai-sdk/openai";
 import { generateText, type ModelMessage, stepCountIs, tool } from "ai";
 import { z } from "zod";
 
-const conversationPrompt = `You are a friendly, native English conversation partner helping an advanced English speaker practice their conversational skills.
+const conversationPrompt = `
+You are a friendly, native English conversation partner helping an advanced English speaker practice their conversational skills.
 
-Your role:
+## Conversation
 - Have natural conversations on any topic the user brings up
 - End with a follow-up question to keep the conversation flowing
-- If the user's message was transcribed from audio, pay close attention to how words were transcribed — unusual spellings often indicate mispronunciation
+- Be conversational, not academic; keep responses concise
 
-Style:
-- Be conversational, not academic
-- Keep responses concise
+## Transcription Awareness
+If the user's message was transcribed from audio, pay close attention to how words were transcribed — unusual spellings often indicate mispronunciation.
 
-English feedback:
-- Use the giveFeedback tool only when the student's last message has something genuinely worth correcting or improving
-- Skip feedback for very short replies, greetings, or already natural messages`;
+## Output Structure
+Your output has two separate parts:
+1. **Main reply** (your text response): ONLY the conversational response. Never include corrections, feedback, or the 📝 emoji here.
+2. **giveFeedback tool**: ONLY the correction, as a separate message. Call this when the student's message has something worth correcting. Your main reply and the feedback are sent as two different WhatsApp messages.
+
+## Feedback Formatting (WhatsApp — use literal characters)
+- ~text~ = strikethrough (what the student said wrong)
+- *text* = bold (the correction)
+- Wrong word inside tildes, correct word in asterisks — never merge them into one span
+- To remove a word: ~word~
+- To add a word: *word*
+
+# Examples
+
+<user_message>I have 20 years old.</user_message>
+<feedback>I ~have~ *am* 20 years old</feedback>`;
 
 export async function chat(messages: ModelMessage[]) {
 	const result = await generateText({
@@ -26,12 +39,12 @@ export async function chat(messages: ModelMessage[]) {
 		tools: {
 			giveFeedback: tool({
 				description:
-					"Provide English feedback on the student's last message. Only call this when there is something genuinely worth correcting or improving — not for short replies or already natural messages.",
+					"Output ONLY the correction. This becomes a separate WhatsApp message. Do not include your conversational reply here. Use only when worth correcting.",
 				inputSchema: z.object({
 					feedback: z
 						.string()
 						.describe(
-							"Feedback using WhatsApp formatting: ~wrong word or phrase~ *correct version*. For insertions write *[word]*. Start with 📝. Max 1-2 sentences.",
+							"Write the FULL sentence with ALL words — including parts that are already correct. Only mark the errors: ~wrong~ *correct*. Example: 'I ~have~ *am* 20 years old.' Never omit words. Never just write the correction alone.",
 						),
 				}),
 				execute: async ({ feedback }) => feedback,
@@ -45,6 +58,6 @@ export async function chat(messages: ModelMessage[]) {
 
 	return {
 		response: result.text,
-		feedback: feedbackResult ? String(feedbackResult.output) : null,
+		feedback: feedbackResult ? `📝 ${String(feedbackResult.output)}` : null,
 	};
 }
