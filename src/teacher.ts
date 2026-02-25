@@ -63,6 +63,11 @@ Provide a short, clear explanation of _why_ the correction is needed. 1–2 sent
 <feedback>I ~'m agree~ *agree* with you, it depends ~of~ *on* the situation.</feedback>
 <explanation>"Agree" is a verb, not an adjective — no "to be" needed. The correct preposition is "depends on".</explanation>`;
 
+function formatExplanation(explanation: string[]): string {
+	if (explanation.length <= 1) return explanation.join("");
+	return explanation.map((item, i) => `${i + 1}. ${item}`).join("\n");
+}
+
 export async function chat(messages: ModelMessage[]) {
 	const result = await generateText({
 		model: openai("gpt-4o"),
@@ -80,9 +85,9 @@ export async function chat(messages: ModelMessage[]) {
 							"Write the FULL sentence with ALL words — including parts that are already correct. Only mark the errors: ~wrong~ *correct*. Example: 'I ~have~ *am* 20 years old.' Never omit words. Never just write the correction alone.",
 						),
 					explanation: z
-						.string()
+						.array(z.string())
 						.describe(
-							"A short explanation (1-2 sentences) of why the correction is needed.",
+							"A list of short explanations (1-2 sentences each), one per error corrected.",
 						),
 				}),
 				execute: async ({ feedback, explanation }) => ({
@@ -101,7 +106,7 @@ export async function chat(messages: ModelMessage[]) {
 		);
 
 	const feedback = feedbackResult
-		? `📝 ${feedbackResult.output.feedback}\n\n${feedbackResult.output.explanation}`
+		? `📝 ${feedbackResult.output.feedback}\n\n${formatExplanation(feedbackResult.output.explanation)}`
 		: null;
 
 	return { response: result.text, feedback };
