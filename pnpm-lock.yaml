@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  baileys@7.0.0-rc.9:
+    hash: 187938d1a4b10bb34e4a46616486df1e13e4e32ddc689289212d157ef0037238
+    path: patches/baileys@7.0.0-rc.9.patch
+
 importers:
 
   .:
@@ -16,7 +21,7 @@ importers:
         version: 6.0.97(zod@4.3.6)
       baileys:
         specifier: ^7.0.0-rc.9
-        version: 7.0.0-rc.9(sharp@0.34.5)
+        version: 7.0.0-rc.9(patch_hash=187938d1a4b10bb34e4a46616486df1e13e4e32ddc689289212d157ef0037238)(sharp@0.34.5)
       pino:
         specifier: ^10.3.1
         version: 10.3.1
@@ -762,7 +767,7 @@ snapshots:
 
   atomic-sleep@1.0.0: {}
 
-  baileys@7.0.0-rc.9(sharp@0.34.5):
+  baileys@7.0.0-rc.9(patch_hash=187938d1a4b10bb34e4a46616486df1e13e4e32ddc689289212d157ef0037238)(sharp@0.34.5):
     dependencies:
       '@cacheable/node-cache': 1.7.6
       '@hapi/boom': 9.1.4
